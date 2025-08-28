@@ -1,0 +1,810 @@
+<!-- Add this HTML above your [table id=1] shortcode -->
+<div class="debate-table-header">
+    <h2>NDT First Rounds Database</h2>
+</div>
+
+<!-- Custom CSS to improve table appearance -->
+<style>
+/* Hide default DataTable elements we don't want */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info {
+    display: none !important;
+}
+
+/* Style the table container */
+#tablepress-1_wrapper {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* Improve table appearance */
+#tablepress-1 {
+    width: 100% !important;
+    border-collapse: collapse;
+}
+
+#tablepress-1 th {
+    background: #f8f9fa;
+    font-weight: 600;
+    padding: 12px 8px;
+    border-bottom: 2px solid #dee2e6;
+    text-align: left;
+}
+
+#tablepress-1 td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: top;
+}
+
+#tablepress-1 tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Style pagination when it appears */
+.dataTables_wrapper .dataTables_paginate {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 6px 12px;
+    margin: 0 2px;
+    border: 1px solid #dee2e6;
+    background: white;
+    color: #495057;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #007cba;
+    color: white;
+    border-color: #007cba;
+}
+
+/* Highlight 4-time winners */
+.four-time-winner {
+    background-color: #fff3cd !important;
+    border-left: 4px solid #ffc107 !important;
+}
+
+/* Autocomplete styling */
+.autocomplete-container {
+    position: relative;
+}
+
+.autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+}
+
+.autocomplete-option {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.autocomplete-option:hover,
+.autocomplete-option.highlighted {
+    background: #f8f9fa;
+}
+
+.autocomplete-option:last-child {
+    border-bottom: none;
+}
+
+.filter-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+    .enhanced-filters {
+        flex-direction: column;
+    }
+    
+    .enhanced-filters > div {
+        width: 100%;
+    }
+}
+</style>
+
+<div style="background: white; padding: 20px; border-left: 1px solid #ddd; border-right: 1px solid #ddd; border-top: 1px solid #ddd;">
+    <div class="enhanced-filters" style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+        <div style="flex: 1; min-width: 200px;">
+            <label for="global-search" style="display: block; font-weight: 600; margin-bottom: 5px;">Search All Fields:</label>
+            <input type="text" id="global-search" placeholder="Search debaters, schools, years..." class="filter-input">
+        </div>
+        
+        <div style="min-width: 180px;">
+            <label for="school-filter" style="display: block; font-weight: 600; margin-bottom: 5px;">School:</label>
+            <div class="autocomplete-container">
+                <input type="text" id="school-filter" placeholder="Type to search schools..." class="filter-input">
+                <div id="school-dropdown" class="autocomplete-dropdown"></div>
+            </div>
+        </div>
+        
+        <div>
+            <label for="year-filter" style="display: block; font-weight: 600; margin-bottom: 5px;">Year:</label>
+            <select id="year-filter" style="padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                <option value="">All Years</option>
+            </select>
+        </div>
+        
+        <div style="min-width: 180px;">
+            <label for="debater-filter" style="display: block; font-weight: 600; margin-bottom: 5px;">Debater:</label>
+            <div class="autocomplete-container">
+                <input type="text" id="debater-filter" placeholder="Type to search debaters..." class="filter-input">
+                <div id="debater-dropdown" class="autocomplete-dropdown"></div>
+            </div>
+        </div>
+        
+        <div>
+            <label for="frequency-filter" style="display: block; font-weight: 600; margin-bottom: 5px;">Award Frequency:</label>
+            <select id="frequency-filter" style="padding: 10px; border: 2px solid #ddd; border-radius: 6px; min-width: 140px;">
+                <option value="">All Frequencies</option>
+                <option value="1">1 time (First-time winners)</option>
+                <option value="2">2 times</option>
+                <option value="3">3 times</option>
+                <option value="4">4+ times (Champions!)</option>
+            </select>
+        </div>
+        
+        <div>
+            <button id="clear-filters" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 25px;">
+                Clear Filters
+            </button>
+        </div>
+    </div>
+    
+    <!-- Status info -->
+    <div id="filter-status" style="background: #e7f3ff; padding: 10px; margin-bottom: -1px; border-radius: 4px 4px 0 0; border-left: 4px solid #007cba;">
+        <strong>Status:</strong> <span id="status-text">Loading filters...</span>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('NDT Filters: Starting initialization...');
+    
+    // Wait for TablePress/DataTables to fully load
+    setTimeout(function() {
+        initializeNDTFilters();
+    }, 1500);
+});
+
+function initializeNDTFilters() {
+    console.log('NDT Filters: Looking for tablepress-1...');
+    
+    // Target the specific TablePress table
+    const tableElement = document.getElementById('tablepress-1');
+    
+    if (!tableElement) {
+        console.log('NDT Filters: Table not found');
+        showStatus('Error: Table not found');
+        return;
+    }
+    
+    console.log('NDT Filters: Table found!');
+    
+    // Get DataTable instance
+    let dataTable = null;
+    try {
+        if (typeof jQuery !== 'undefined' && jQuery.fn.DataTable) {
+            dataTable = jQuery('#tablepress-1').DataTable();
+            console.log('NDT Filters: DataTable instance found');
+        }
+    } catch (e) {
+        console.log('NDT Filters: No DataTable instance, using regular table');
+    }
+    
+    // Extract table data
+    const tableData = extractTableData(tableElement, dataTable);
+    console.log('NDT Filters: Extracted data:', tableData);
+    
+    if (tableData.rows.length === 0) {
+        showStatus('Error: No data found in table');
+        return;
+    }
+    
+    // Calculate debater frequencies
+    const debaterFrequencies = calculateDebaterFrequencies(tableData);
+    
+    // Set up filters
+    setupFilters(tableElement, dataTable, tableData, debaterFrequencies);
+    
+    // Highlight 4+ time winners
+    highlightFrequentWinners(tableElement, dataTable, debaterFrequencies);
+    
+    showStatus(`Ready! Loaded ${tableData.rows.length} entries`);
+}
+
+// Helper function to check if a row has valid data
+function isValidRow(row) {
+    if (!row || row.length < 5) {
+        return false;
+    }
+    
+    // Check if essential fields are not empty
+    const school = row[1] ? row[1].toString().trim() : '';
+    const debater1 = row[2] ? row[2].toString().trim() : '';
+    const debater2 = row[3] ? row[3].toString().trim() : '';
+    const year = row[4] ? row[4].toString().trim() : '';
+    
+    // Row must have at least school, one debater, and year
+    return school.length > 0 && (debater1.length > 0 || debater2.length > 0) && year.length > 0;
+}
+
+function extractTableData(tableElement, dataTable) {
+    const rows = [];
+    
+    if (dataTable) {
+        // Use DataTable API to get all data (including filtered/sorted)
+        const data = dataTable.data().toArray();
+        data.forEach(row => {
+            let rowData;
+            if (Array.isArray(row)) {
+                rowData = row;
+            } else {
+                // Handle case where row might be an object
+                rowData = Object.values(row);
+            }
+            
+            // Only include valid rows
+            if (isValidRow(rowData)) {
+                rows.push(rowData);
+            }
+        });
+    } else {
+        // Extract from DOM
+        const tbody = tableElement.querySelector('tbody');
+        if (tbody) {
+            const rowElements = tbody.querySelectorAll('tr');
+            rowElements.forEach(rowElement => {
+                const cells = rowElement.querySelectorAll('td');
+                const rowData = Array.from(cells).map(cell => cell.textContent.trim());
+                
+                // Only include valid rows
+                if (isValidRow(rowData)) {
+                    rows.push(rowData);
+                }
+            });
+        }
+    }
+    
+    console.log(`NDT Filters: Extracted ${rows.length} valid rows from table`);
+    return { rows: rows };
+}
+
+function calculateDebaterFrequencies(tableData) {
+    const frequencies = new Map();
+    
+    tableData.rows.forEach(row => {
+        if (isValidRow(row)) {
+            // Count occurrences for debater 1 (column 2)
+            const debater1 = row[2] ? row[2].toString().trim() : '';
+            if (debater1.length > 0) {
+                frequencies.set(debater1, (frequencies.get(debater1) || 0) + 1);
+            }
+            
+            // Count occurrences for debater 2 (column 3)
+            const debater2 = row[3] ? row[3].toString().trim() : '';
+            if (debater2.length > 0) {
+                frequencies.set(debater2, (frequencies.get(debater2) || 0) + 1);
+            }
+        }
+    });
+    
+    console.log('NDT Filters: Calculated frequencies for', frequencies.size, 'debaters');
+    
+    // Log some statistics
+    const frequencyCounts = {};
+    frequencies.forEach(count => {
+        frequencyCounts[count] = (frequencyCounts[count] || 0) + 1;
+    });
+    console.log('NDT Filters: Frequency distribution:', frequencyCounts);
+    
+    return frequencies;
+}
+
+function highlightFrequentWinners(tableElement, dataTable, debaterFrequencies) {
+    // Find debaters with 4+ wins
+    const fourPlusWinners = new Set();
+    debaterFrequencies.forEach((count, debater) => {
+        if (count >= 4) {
+            fourPlusWinners.add(debater);
+        }
+    });
+    
+    console.log('NDT Filters: Found', fourPlusWinners.size, '4+ time winners');
+    
+    if (dataTable) {
+        // Highlight DataTable rows
+        dataTable.rows().every(function() {
+            const data = this.data();
+            if (isValidRow(data)) {
+                const debater1 = data[2] ? data[2].toString().trim() : '';
+                const debater2 = data[3] ? data[3].toString().trim() : '';
+                
+                if (fourPlusWinners.has(debater1) || fourPlusWinners.has(debater2)) {
+                    jQuery(this.node()).addClass('four-time-winner');
+                }
+            }
+        });
+    } else {
+        // Highlight regular table rows
+        const rows = tableElement.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 4) {
+                const debater1 = cells[2].textContent.trim();
+                const debater2 = cells[3].textContent.trim();
+                
+                if (fourPlusWinners.has(debater1) || fourPlusWinners.has(debater2)) {
+                    row.classList.add('four-time-winner');
+                }
+            }
+        });
+    }
+}
+
+function setupFilters(tableElement, dataTable, tableData, debaterFrequencies) {
+    console.log('NDT Filters: Setting up filters...');
+    
+    // Extract unique values from valid rows only
+    const schools = new Set();
+    const years = new Set();
+    const debaters = new Set();
+    
+    tableData.rows.forEach(row => {
+        if (isValidRow(row)) {
+            // Column 1: School (index 1)
+            const school = row[1] ? row[1].toString().trim() : '';
+            if (school.length > 0) {
+                schools.add(school);
+            }
+            
+            // Column 2 & 3: Debaters (index 2 and 3)
+            const debater1 = row[2] ? row[2].toString().trim() : '';
+            const debater2 = row[3] ? row[3].toString().trim() : '';
+            if (debater1.length > 0) {
+                debaters.add(debater1);
+            }
+            if (debater2.length > 0) {
+                debaters.add(debater2);
+            }
+            
+            // Column 4: Year (index 4)
+            const year = row[4] ? row[4].toString().trim() : '';
+            if (year.length > 0 && year.match(/^\d{4}$/)) {  // 4-digit year
+                years.add(year);
+            }
+        }
+    });
+    
+    console.log('NDT Filters: Found', schools.size, 'schools,', years.size, 'years,', debaters.size, 'debaters');
+    
+    // Store data for autocomplete
+    const schoolsArray = Array.from(schools).sort();
+    const debatersArray = Array.from(debaters).sort();
+    
+    // Set up autocomplete for schools and debaters
+    setupAutocomplete('school-filter', 'school-dropdown', schoolsArray);
+    setupAutocomplete('debater-filter', 'debater-dropdown', debatersArray);
+    
+    // Populate year dropdown (keep as dropdown since it's a smaller list)
+    populateSelect('year-filter', Array.from(years).sort((a, b) => b - a)); // Newest first
+    
+    // Set up event listeners
+    setupEventListeners(tableElement, dataTable, tableData, debaterFrequencies);
+    
+    // Configure DataTable display options
+    if (dataTable) {
+        // Hide DataTable's default search
+        jQuery('.dataTables_filter').hide();
+        
+        // Show all entries by default (remove pagination for filtered results)
+        dataTable.page.len(-1); // -1 means show all
+        
+        // Hide the "Show X entries" dropdown
+        jQuery('.dataTables_length').hide();
+        
+        // Hide pagination controls initially
+        jQuery('.dataTables_paginate').hide();
+        
+        // Hide the "Showing X to Y of Z entries" info
+        jQuery('.dataTables_info').hide();
+        
+        dataTable.draw();
+    }
+}
+
+function setupAutocomplete(inputId, dropdownId, options) {
+    const input = document.getElementById(inputId);
+    const dropdown = document.getElementById(dropdownId);
+    let selectedValue = '';
+    let highlightedIndex = -1;
+    
+    input.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        selectedValue = ''; // Reset selection when typing
+        
+        if (value.length === 0) {
+            dropdown.style.display = 'none';
+            triggerFilterUpdate();
+            return;
+        }
+        
+        // Filter options based on input
+        const filteredOptions = options.filter(option => 
+            option.toLowerCase().includes(value)
+        );
+        
+        if (filteredOptions.length === 0) {
+            dropdown.style.display = 'none';
+            triggerFilterUpdate();
+            return;
+        }
+        
+        // Populate dropdown
+        dropdown.innerHTML = '';
+        filteredOptions.forEach((option, index) => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-option';
+            div.textContent = option;
+            div.addEventListener('click', function() {
+                input.value = option;
+                selectedValue = option;
+                dropdown.style.display = 'none';
+                triggerFilterUpdate();
+            });
+            dropdown.appendChild(div);
+        });
+        
+        highlightedIndex = -1;
+        dropdown.style.display = 'block';
+    });
+    
+    // Handle keyboard navigation
+    input.addEventListener('keydown', function(e) {
+        const options = dropdown.querySelectorAll('.autocomplete-option');
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            highlightedIndex = Math.min(highlightedIndex + 1, options.length - 1);
+            updateHighlight(options);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            highlightedIndex = Math.max(highlightedIndex - 1, -1);
+            updateHighlight(options);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (highlightedIndex >= 0 && options[highlightedIndex]) {
+                const selectedOption = options[highlightedIndex].textContent;
+                input.value = selectedOption;
+                selectedValue = selectedOption;
+                dropdown.style.display = 'none';
+                triggerFilterUpdate();
+            }
+        } else if (e.key === 'Escape') {
+            dropdown.style.display = 'none';
+        }
+    });
+    
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+    
+    function updateHighlight(options) {
+        options.forEach((option, index) => {
+            option.classList.toggle('highlighted', index === highlightedIndex);
+        });
+    }
+    
+    function triggerFilterUpdate() {
+        // Trigger the filter update
+        const event = new Event('input', { bubbles: true });
+        input.dispatchEvent(event);
+    }
+    
+    // Custom method to get the selected value
+    input.getSelectedValue = function() {
+        // If there's an exact match in options, return it
+        if (options.includes(this.value)) {
+            return this.value;
+        }
+        // If there's a selected value from dropdown click, return it
+        if (selectedValue) {
+            return selectedValue;
+        }
+        // Otherwise, return empty string (no valid selection)
+        return '';
+    };
+}
+
+function populateSelect(selectId, options) {
+    const select = document.getElementById(selectId);
+    
+    // Clear existing options except first
+    while (select.children.length > 1) {
+        select.removeChild(select.lastChild);
+    }
+    
+    // Add new options
+    options.forEach(option => {
+        const optionElement = document.createElement('option');
+        optionElement.value = option;
+        optionElement.textContent = option;
+        select.appendChild(optionElement);
+    });
+    
+    console.log(`NDT Filters: Populated ${selectId} with ${options.length} options`);
+}
+
+function setupEventListeners(tableElement, dataTable, tableData, debaterFrequencies) {
+    const globalSearch = document.getElementById('global-search');
+    const schoolFilter = document.getElementById('school-filter');
+    const yearFilter = document.getElementById('year-filter');
+    const debaterFilter = document.getElementById('debater-filter');
+    const frequencyFilter = document.getElementById('frequency-filter');
+    const clearButton = document.getElementById('clear-filters');
+    
+    function applyFilters() {
+        const searchTerm = globalSearch.value.toLowerCase().trim();
+        const selectedSchool = schoolFilter.getSelectedValue ? schoolFilter.getSelectedValue() : '';
+        const selectedYear = yearFilter.value;
+        const selectedDebater = debaterFilter.getSelectedValue ? debaterFilter.getSelectedValue() : '';
+        const selectedFrequency = frequencyFilter.value;
+        
+        console.log('NDT Filters: Applying filters:', {
+            search: searchTerm,
+            school: selectedSchool,
+            year: selectedYear,
+            debater: selectedDebater,
+            frequency: selectedFrequency
+        });
+        
+        if (dataTable) {
+            // Clear any existing custom search functions
+            while (jQuery.fn.dataTable.ext.search.length > 0) {
+                jQuery.fn.dataTable.ext.search.pop();
+            }
+            
+            // Add custom search function
+            jQuery.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                // Only apply to our specific table
+                if (settings.nTable.id !== 'tablepress-1') {
+                    return true;
+                }
+                
+                // First check if this is a valid row
+                if (!isValidRow(data)) {
+                    return false;
+                }
+                
+                // Convert data to string for searching (only non-empty values)
+                const searchableData = data.filter(cell => cell && cell.toString().trim().length > 0);
+                const rowText = searchableData.join(' ').toLowerCase();
+                
+                // Apply global search
+                if (searchTerm && !rowText.includes(searchTerm)) {
+                    return false;
+                }
+                
+                // Apply specific filters
+                if (data.length >= 5) {
+                    // School filter (column 1)
+                    if (selectedSchool) {
+                        const school = data[1] ? data[1].toString().trim() : '';
+                        if (school !== selectedSchool) {
+                            return false;
+                        }
+                    }
+                    
+                    // Year filter (column 4)
+                    if (selectedYear) {
+                        const year = data[4] ? data[4].toString().trim() : '';
+                        if (year !== selectedYear) {
+                            return false;
+                        }
+                    }
+                    
+                    // Debater filter (columns 2 and 3)
+                    if (selectedDebater) {
+                        const debater1 = data[2] ? data[2].toString().trim() : '';
+                        const debater2 = data[3] ? data[3].toString().trim() : '';
+                        if (debater1 !== selectedDebater && debater2 !== selectedDebater) {
+                            return false;
+                        }
+                    }
+                    
+                    // Frequency filter
+                    if (selectedFrequency && debaterFrequencies) {
+                        const debater1 = data[2] ? data[2].toString().trim() : '';
+                        const debater2 = data[3] ? data[3].toString().trim() : '';
+                        const freq1 = debaterFrequencies.get(debater1) || 0;
+                        const freq2 = debaterFrequencies.get(debater2) || 0;
+                        
+                        let frequencyMatch = false;
+                        
+                        if (selectedFrequency === '4') {
+                            // 4+ times - show if either debater has 4+ wins
+                            if (freq1 >= 4 || freq2 >= 4) {
+                                frequencyMatch = true;
+                            }
+                        } else {
+                            // Exact frequency match
+                            const targetFreq = parseInt(selectedFrequency);
+                            if (freq1 === targetFreq || freq2 === targetFreq) {
+                                frequencyMatch = true;
+                            }
+                        }
+                        
+                        if (!frequencyMatch) {
+                            return false;
+                        }
+                    }
+                }
+                
+                return true;
+            });
+            
+            // Redraw table to apply filters
+            dataTable.draw();
+            
+            // Get visible count
+            const visibleCount = dataTable.rows({search: 'applied'}).count();
+            updateStatus(visibleCount, tableData.rows.length, selectedFrequency);
+        } else {
+            // Fallback for regular table
+            let visibleCount = 0;
+            const rows = tableElement.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const rowData = Array.from(cells).map(cell => cell.textContent.trim());
+                
+                let show = false;
+                
+                // Only process valid rows
+                if (isValidRow(rowData)) {
+                    show = true;
+                    
+                    // Convert to searchable text (only non-empty values)
+                    const searchableData = rowData.filter(cell => cell && cell.trim().length > 0);
+                    const rowText = searchableData.join(' ').toLowerCase();
+                    
+                    // Apply global search
+                    if (searchTerm && !rowText.includes(searchTerm)) {
+                        show = false;
+                    }
+                    
+                    // Apply specific filters
+                    if (show && cells.length >= 5) {
+                        if (selectedSchool && cells[1].textContent.trim() !== selectedSchool) {
+                            show = false;
+                        }
+                        if (show && selectedYear && cells[4].textContent.trim() !== selectedYear) {
+                            show = false;
+                        }
+                        if (show && selectedDebater && 
+                            cells[2].textContent.trim() !== selectedDebater && 
+                            cells[3].textContent.trim() !== selectedDebater) {
+                            show = false;
+                        }
+                        
+                        // Frequency filter
+                        if (show && selectedFrequency && debaterFrequencies) {
+                            const debater1 = cells[2].textContent.trim();
+                            const debater2 = cells[3].textContent.trim();
+                            const freq1 = debaterFrequencies.get(debater1) || 0;
+                            const freq2 = debaterFrequencies.get(debater2) || 0;
+                            
+                            let frequencyMatch = false;
+                            
+                            if (selectedFrequency === '4') {
+                                // 4+ times
+                                if (freq1 >= 4 || freq2 >= 4) {
+                                    frequencyMatch = true;
+                                }
+                            } else {
+                                // Exact frequency match
+                                const targetFreq = parseInt(selectedFrequency);
+                                if (freq1 === targetFreq || freq2 === targetFreq) {
+                                    frequencyMatch = true;
+                                }
+                            }
+                            
+                            if (!frequencyMatch) {
+                                show = false;
+                            }
+                        }
+                    }
+                }
+                
+                if (show) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            updateStatus(visibleCount, tableData.rows.length, selectedFrequency);
+        }
+    }
+    
+    // Add event listeners
+    globalSearch.addEventListener('input', applyFilters);
+    schoolFilter.addEventListener('input', applyFilters);
+    yearFilter.addEventListener('change', applyFilters);
+    debaterFilter.addEventListener('input', applyFilters);
+    frequencyFilter.addEventListener('change', applyFilters);
+    
+    // Clear filters
+    clearButton.addEventListener('click', function() {
+        globalSearch.value = '';
+        schoolFilter.value = '';
+        yearFilter.value = '';
+        debaterFilter.value = '';
+        frequencyFilter.value = '';
+        
+        // Hide autocomplete dropdowns
+        document.getElementById('school-dropdown').style.display = 'none';
+        document.getElementById('debater-dropdown').style.display = 'none';
+        
+        // Clear DataTable custom search functions
+        if (dataTable) {
+            while (jQuery.fn.dataTable.ext.search.length > 0) {
+                jQuery.fn.dataTable.ext.search.pop();
+            }
+            dataTable.draw();
+        }
+        
+        applyFilters();
+    });
+    
+    console.log('NDT Filters: Event listeners set up');
+}
+
+function updateStatus(visibleCount, totalCount, selectedFrequency) {
+    let statusMessage = `Showing ${visibleCount} of ${totalCount} entries`;
+    if (selectedFrequency === '4') {
+        statusMessage += ' (4+ time winners highlighted in yellow)';
+    }
+    showStatus(statusMessage);
+}
+
+function showStatus(message) {
+    const statusText = document.getElementById('status-text');
+    statusText.textContent = message;
+    console.log('NDT Filters:', message);
+}
+</script>
